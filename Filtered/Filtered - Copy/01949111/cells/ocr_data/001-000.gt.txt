@@ -1,0 +1,8 @@
+Emission Type
+
+Scope 1 Emissions (direct)
+Scope 2 Emissions (indirect)
+Scope 3 Emissions {indirect}
+Total
+
+Carbon intensity Ratio

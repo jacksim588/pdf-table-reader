@@ -1,0 +1,2 @@
+1,145,704 kWh = 267.1
+tonnes of CO2e

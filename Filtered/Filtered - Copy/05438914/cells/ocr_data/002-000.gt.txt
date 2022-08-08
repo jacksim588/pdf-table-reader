@@ -1,0 +1,3 @@
+Energy consumption used
+to calculate emissions:
+‘kWh

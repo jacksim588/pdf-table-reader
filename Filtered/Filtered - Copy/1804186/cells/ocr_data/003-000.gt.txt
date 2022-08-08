@@ -1,0 +1,1 @@
+Total electricity consumption (kWh)

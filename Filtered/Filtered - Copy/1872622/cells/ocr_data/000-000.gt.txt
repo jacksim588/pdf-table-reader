@@ -1,0 +1,3 @@
+Energy consumption used to calculate emissions: (kWh
+(optionalio provide separate figures for gas, electricity, uansport fuel and other eneigy
+sources)

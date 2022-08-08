@@ -1,0 +1,3 @@
+Electricity supplied from off site generation for
+consumption by on site operations (Heating, Ventilation,
+Air Conditioning, lighting, computers, etc) - Scope 2 KWh

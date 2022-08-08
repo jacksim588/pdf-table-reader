@@ -1,0 +1,2 @@
+1,463.28 tonnes CO2e
+Excludes scope 3 emissions

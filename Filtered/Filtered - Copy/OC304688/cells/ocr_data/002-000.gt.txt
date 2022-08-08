@@ -1,0 +1,3 @@
+Gas (Scope 1)
+Electricity (Scope 2)
+Transport (Scope 1)
