@@ -2,6 +2,9 @@ import os, shutil
 
 def create_folder(folder,companyNumber):
     os.mkdir(folder+'\\'+companyNumber)
+    with open(folder+'\\'+companyNumber+'\\'+'output.csv', "w") as my_empty_csv:
+        # now you have an empty file already
+        pass
 
 
 def remove_contents(folder):

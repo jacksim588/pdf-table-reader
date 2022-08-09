@@ -15,6 +15,8 @@ import resources.ocr_to_csv as ocr_to_csv
 import resources.mine_csv as mine_csv
 import resources.file_structure as file_structure
 import resources.get_pdf as get_pdf
+import resources.pdf_to_image as pdf_to_image
+
 print("Beginning Demo 2.0")
 
 def main(image_filepath):
@@ -58,10 +60,13 @@ image_filepath = r'C:\Users\jacks\Documents\GitHub\OCR-PDF-Mining\output\bin\Fil
 folder = r"C:\Users\jacks\Documents\Document(Offline)\Barcanet\Record Linkage\Filtered\Filtered - Copy\\"
 #folder = r"C:\Users\jacks\Documents\Document(Offline)\Barcanet\Record Linkage\Filtered\test\\"
 
-companyNumbers=['00457936']
+companyNumbers=['00457936','329613','3707899','2242204','1872622'
+                ,'4768193','SC044986','SC339123','OC304378',
+                '7563201','11593130','7036902']
 folder = 'F:\Data Mining\CO2Extraction'
 file_structure.remove_contents(folder)
 for companyNumber in companyNumbers:
+    error=False
 
     '''
     Takes company number and creates new folder
@@ -73,26 +78,29 @@ for companyNumber in companyNumbers:
     '''
     get_pdf.get_pdf_from_companies_house(folder,companyNumber)
     '''
-    takes the PDF, and filters it down to the page with CO2 data on it
-    '''
-
-    '''
+    takes the PDF, and filters it down to the pages with CO2 data on it
     takes the filtered PDF & converts it to an images
     '''
-    #pdf_filepath=(folder+file)
-    #images = convert_from_path(pdf_filepath)
-    #image_filepath = pdf_filepath[:-4]+'.png'
-    #images[0].save(image_filepath)
-
+    pdf_to_image.pdf_to_images(folder,companyNumber)
+    imageFiles = pdf_to_image.getImagePaths(folder,companyNumber)
 
     '''
     Takes the path of an image and extracts the table from this image
     '''
-    '''try:
+    image_filepath=(folder+'\\'+companyNumber+'\\images\\'+imageFiles[0])
+    try:
         main(image_filepath)
     except cv2.error:
-        print('Image Conversion Error')'''
+        print('Image Conversion Error')
 
+    output = mine_csv.csv_to_array(folder+'\\'+companyNumber+'\\images',companyNumber)
+    print(output)
+
+
+    f = open(folder+'\\'+companyNumber+'\\'+'output.csv', 'w', newline='')
+    writer = csv.writer(f)
+    writer.writerow(output)
+    f.close()
 
 
 

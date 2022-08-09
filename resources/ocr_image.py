@@ -84,6 +84,6 @@ def crop_to_text(image):
     return bordered
 def ocr_image(image):
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-    print('OCR-ing Image')
+    #print('OCR-ing Image')
     return pytesseract.image_to_string(image)
 

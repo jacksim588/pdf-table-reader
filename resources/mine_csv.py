@@ -221,84 +221,87 @@ def dropUnwantedColumns(df,columns_to_delete):
             df = df.drop(column, 1)
     return df
 
-def csv_to_array(folder,file):
+def csv_to_array(folder,companyNumber):
+    #print('csv to array')
     output=[]
-    try:
-        if file.endswith(".csv"):
-            #print('file: '+file)
-            characters=['\'',',']
-            columns_to_delete=['energy','kwh']
-            rows_to_delete=['kwh','kWh']
-            try:
-                df = pd.read_csv(folder+'\\'+file,encoding='iso-8859-1',header=None)
-            except ParserError:
-                df = handleParseError(folder,file)
-            #print('Original Dataframe ')
-            #print(tabulate(df, headers='keys', tablefmt='psql'))
-            if len(df.columns)>1:
-                df = df.dropna(how='all')#remove empty rows
-                df = df.reset_index(drop=True)
-                df = dfToLowerCase(df) #making df lower case
-                df = removeUnwantedCharacter(df,characters)#remove unwanted characters from the whole of the dataframe  
-                df = dropUnwantedColumns(df,columns_to_delete)#drop columns if their header is unwanted e.g units
-                
-                
-                df = dropUnwantedRows(df,rows_to_delete)
-                #print('Altered Dataframe')
+    for file in os.listdir(folder):
+        #print(file)
+        try:
+            if file.endswith(".csv"):
+                #print('file: '+file)
+                characters=['\'',',']
+                columns_to_delete=['energy','kwh']
+                rows_to_delete=['kwh','kWh']
+                try:
+                    df = pd.read_csv(folder+'\\'+file,encoding='iso-8859-1',header=None)
+                except ParserError:
+                    df = handleParseError(folder,file)
+                #print('Original Dataframe ')
                 #print(tabulate(df, headers='keys', tablefmt='psql'))
                 if len(df.columns)>1:
-                    foundDate = searchForDate(df)
+                    df = df.dropna(how='all')#remove empty rows
+                    df = df.reset_index(drop=True)
+                    df = dfToLowerCase(df) #making df lower case
+                    df = removeUnwantedCharacter(df,characters)#remove unwanted characters from the whole of the dataframe  
+                    df = dropUnwantedColumns(df,columns_to_delete)#drop columns if their header is unwanted e.g units
                     
-                    scope1 = extractDataByPhrase(df,['scope 1',
-                                                    'direct combustion',
-                                                    'emissions from burning of gas',
-                                                    'emissions from burning of fuel',
-                                                    'emissions from combustion of gas',
-                                                    'emissions from combustion of fuel'],
-                                                
-                                                unwantedPhrases=['scope 1\+2',
-                                                    'scope 1 \+ 2',
-                                                    'scope 1 \+2',
-                                                    'scope 1\+ 2',
-                                                    'kwh'])
-                    scope2 = extractDataByPhrase(df,['scope 2',
-                                                    'indirect',
-                                                    'emissions from electricity',
-                                                    'emissions from purchased electricity'],
+                    
+                    df = dropUnwantedRows(df,rows_to_delete)
+                    #print('Altered Dataframe')
+                    #print(tabulate(df, headers='keys', tablefmt='psql'))
+                    if len(df.columns)>1:
+                        foundDate = searchForDate(df)
+                        
+                        scope1 = extractDataByPhrase(df,['scope 1',
+                                                        'direct combustion',
+                                                        'emissions from burning of gas',
+                                                        'emissions from burning of fuel',
+                                                        'emissions from combustion of gas',
+                                                        'emissions from combustion of fuel'],
                                                     
-                                                    unwantedPhrases=['scope 1','kwh'])
-                 
-                    scope3 = extractDataByPhrase(df,['scope 3','travel'],
-                                                    unwantedPhrases=['kwh'])
-                    intensity = extractDataByPhrase(df,['intensity'])
-                    totalemissions= extractDataByPhrase(df,['total gross co2e',
-                                                        'total gross emissions',
-                                                        'total net emissions',
-                                                        'total emissions',
-                                                        'total co2e',
-                                                        'total gross co?e',
-                                                        'total co?e',
-                                                        'total gross coze',
-                                                        'total coze',
-                                                        'all scopes'],
-                                                        unwantedPhrases=['kwh'],
-                                                        sumIfMultiple=False)
+                                                    unwantedPhrases=['scope 1\+2',
+                                                        'scope 1 \+ 2',
+                                                        'scope 1 \+2',
+                                                        'scope 1\+ 2',
+                                                        'kwh'])
+                        scope2 = extractDataByPhrase(df,['scope 2',
+                                                        'indirect',
+                                                        'emissions from electricity',
+                                                        'emissions from purchased electricity'],
+                                                        
+                                                        unwantedPhrases=['scope 1','kwh'])
+                    
+                        scope3 = extractDataByPhrase(df,['scope 3','travel'],
+                                                        unwantedPhrases=['kwh'])
+                        intensity = extractDataByPhrase(df,['intensity'])
+                        totalemissions= extractDataByPhrase(df,['total gross co2e',
+                                                            'total gross emissions',
+                                                            'total net emissions',
+                                                            'total emissions',
+                                                            'total co2e',
+                                                            'total gross co?e',
+                                                            'total co?e',
+                                                            'total gross coze',
+                                                            'total coze',
+                                                            'all scopes'],
+                                                            unwantedPhrases=['kwh'],
+                                                            sumIfMultiple=False)
 
-                    #print('Date: '+foundDate)
-                    #print('scope 1 value: ',scope1)
-                    #print('scope 2 value: ',scope2)
-                    #print('scope 3 value: ',scope3)
-                    #print('Intensity: ', intensity)
-                    #print('total emissions: ',totalemissions)
-                    output.append([file[:-4],foundDate,scope1,scope2,scope3,intensity,totalemissions])
+                        #print('Date: '+foundDate)
+                        #print('scope 1 value: ',scope1)
+                        #print('scope 2 value: ',scope2)
+                        #print('scope 3 value: ',scope3)
+                        #print('Intensity: ', intensity)
+                        #print('total emissions: ',totalemissions)
+                        output = [companyNumber,foundDate,scope1,scope2,scope3,intensity,totalemissions]
+                        return output
+                else:
+                    #print('Not enough data found')
                     return output
-            else:
-                #print('Not enough data found')
-                return output
-    except pandas.io.common.EmptyDataError:
-        #print('Dataframe Empty.')
-        return output
+        except pandas.io.common.EmptyDataError:
+            #print('Dataframe Empty.')
+            return output
 
-#output = csv_to_array(r'C:\Users\Clamfighter\Documents\GitHub\pdf-table-reader\Filtered\Filtered - Copy',r'00457936.csv')
+#output = csv_to_array(r'F:\Data Mining\CO2Extraction\00457936\images','00457936')
 
 #print(output)
