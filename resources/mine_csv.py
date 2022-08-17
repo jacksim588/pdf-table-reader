@@ -1,11 +1,14 @@
 #imports
+from distutils.log import error
 from tabulate import tabulate
 import pandas as pd
 import pandas.io.common
 import numpy as np
 import os
 import csv
+import resources.errorHandling as errorHandling
 from pandas.io.parsers import ParserError
+
 '''
 converts a dataframe to all lowercase
 '''
@@ -222,13 +225,15 @@ def dropUnwantedColumns(df,columns_to_delete):
     return df
 
 def csv_to_array(folder,companyNumber):
-    #print('csv to array')
+    print('csv to array')
     output=[]
+    hasCSV=False
     for file in os.listdir(folder):
-        #print(file)
+        print(file)
         try:
             if file.endswith(".csv"):
-                #print('file: '+file)
+                hasCSV=True
+                print('file: '+file)
                 characters=['\'',',']
                 columns_to_delete=['energy','kwh']
                 rows_to_delete=['kwh','kWh']
@@ -294,14 +299,16 @@ def csv_to_array(folder,companyNumber):
                         #print('Intensity: ', intensity)
                         #print('total emissions: ',totalemissions)
                         output = [companyNumber,foundDate,scope1,scope2,scope3,intensity,totalemissions]
+                        print('Returning Data: ',output)
                         return output
                 else:
-                    #print('Not enough data found')
-                    return output
+                    print('Not enough data found')
+                    raise errorHandling.FailedToExtractDataError
         except pandas.io.common.EmptyDataError:
-            #print('Dataframe Empty.')
-            return output
-
+            print('Dataframe Empty.')
+            raise errorHandling.FailedToExtractDataError
+    if hasCSV ==False:
+        raise errorHandling.FailedToExtractDataError
 #output = csv_to_array(r'F:\Data Mining\CO2Extraction\00457936\images','00457936')
 
 #print(output)

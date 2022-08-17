@@ -96,7 +96,7 @@ def main(files):
     '''
     for f in files:
         directory, filename = os.path.split(f)
-        print(f)
+        #print(f)
         image = cv2.imread(f, cv2.IMREAD_GRAYSCALE)
         tables = find_tables(image)
         files = []
