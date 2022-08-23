@@ -17,7 +17,7 @@ import resources.file_structure as file_structure
 import resources.get_pdf as get_pdf
 import resources.pdf_to_image as pdf_to_image
 import resources.errorHandling as errorHandling
-
+import time
 print("Beginning Demo 2.0")
 
 def main(image_filepath):
@@ -68,6 +68,13 @@ folder = r"C:\Users\jacks\Documents\Document(Offline)\Barcanet\Record Linkage\Fi
 #companyNumbers=['04768193']     
 folder = 'F:\Data Mining\CO2Extraction'
 file_structure.remove_contents(folder)
+
+getPDFCount=0
+getPDFAvg=0
+filterPDFCount=0
+filterPDFAvg=0
+dataMineCount=0
+dataMineAvg=0
 for companyNumber in companyNumbers:
     print('CN: '+companyNumber)
     try:
@@ -80,19 +87,34 @@ for companyNumber in companyNumbers:
         Stores it in the folder created above
         '''
         print('Retrieving PDF')
+        getPDFstart = time.time()
+
         get_pdf.get_pdf_from_companies_house(folder,companyNumber)
+
+        getPDFend = time.time()
+        getPDFAvg=(getPDFCount*getPDFAvg+(getPDFend-getPDFstart))/(getPDFCount+1)
+        getPDFCount+=1
         '''
         takes the PDF, and filters it down to the pages with CO2 data on it
         takes the filtered PDF & converts it to an images
         '''
         print('Filtering PDF')
+        filterPDFstart = time.time()
+
         pdf_to_image.pdf_to_images(folder,companyNumber)
         imageFiles = pdf_to_image.getImagePaths(folder,companyNumber)
 
+        
+        filterPDFend = time.time()
+        filterPDFAvg=(filterPDFCount*filterPDFAvg+(filterPDFend-filterPDFstart))/(filterPDFCount+1)
+        filterPDFCount+=1
         '''
         Takes the path of an image and extracts the table from this image
         '''
         print('Extracting data from image')
+
+        dataMinestart = time.time()
+
         try:
             image_filepath=(folder+'\\'+companyNumber+'\\images\\'+imageFiles[0])
             main(image_filepath)
@@ -105,18 +127,22 @@ for companyNumber in companyNumbers:
         print('Mining output data')
         output = mine_csv.csv_to_array(folder+'\\'+companyNumber+'\\images',companyNumber)
         print(output)
+
+        dataMineend = time.time()
+        dataMineAvg=(dataMineCount*dataMineAvg+(dataMineend-dataMinestart))/(dataMineCount+1)
+        dataMineCount+=1
     except errorHandling.AccountsNotFoundError:
-        output=[companyNumber,'','','','','','AccountsNotFoundError']
+        output=[companyNumber,'','','','','','','AccountsNotFoundError']
     except errorHandling.NoPhraseInPDFError:
-        output=[companyNumber,'','','','','','NoPhraseInPDFError']
+        output=[companyNumber,'','','','','','','NoPhraseInPDFError']
     except errorHandling.FailedToExtractDataError:
-        output=[companyNumber,'','','','','','FailedToExtractDataError']
+        output=[companyNumber,'','','','','','','FailedToExtractDataError']
     except pdf2image.exceptions.PDFPageCountError:
-        output=[companyNumber,'','','','','','PDFPageCountError']
+        output=[companyNumber,'','','','','','','PDFPageCountError']
     except Exception as e:
         if 'Syntax Error' in str(e):
             continue
-        output=[companyNumber,'','','','','',e]
+        output=[companyNumber,'','','','','','',e]
 
     print('Exporting Data for: ',companyNumber)
     print('data exporting: ',output)
@@ -124,5 +150,10 @@ for companyNumber in companyNumbers:
     writer = csv.writer(f)
     writer.writerow(output)
     f.close()
+
+    print('Get PDF Averge Time: ',getPDFAvg)
+    print('filter PDF Averge Time: ',filterPDFAvg)
+    print('Data Mining PDF Averge Time: ',dataMineAvg)
+    
 
 
