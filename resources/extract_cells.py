@@ -5,6 +5,10 @@ def extract_cell_images_from_table(image):
     '''
     Blurs and normalises the table
     '''
+
+    #white = [255,255,255]
+    #image = cv2.copyMakeBorder(image,20,20,20,20,cv2.BORDER_CONSTANT,value=white)
+
     BLUR_KERNEL_SIZE = (17, 17)
     STD_DEV_X_DIRECTION = 0
     STD_DEV_Y_DIRECTION = 0
@@ -33,6 +37,9 @@ def extract_cell_images_from_table(image):
     vertically_dilated = cv2.dilate(vertically_opened, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 60)))
     
     mask = horizontally_dilated + vertically_dilated
+    
+    #cv2.imshow("mask", mask)
+    #cv2.waitKey(0)
 
     '''
     Extracts contours as a tree, so when know which contours are within others
@@ -64,6 +71,7 @@ def extract_cell_images_from_table(image):
     bounding_rects = [b for b in bounding_rects if b is not largest_rect]
     
     cells = [c for c in bounding_rects]
+    #print('# of cells: ',len(cells))
     def cell_in_same_row(c1, c2):
         c1_center = c1[1] + c1[3] - c1[3] / 2
         c2_bottom = c2[1] + c2[3]

@@ -25,7 +25,7 @@ def text_files_to_csv(files,outFilePath):
     writer = csv.writer(csv_file)
     writer.writerows(rows)
 
-    print('Output File:',outFilePath)
+    #print('Output File:',outFilePath)
     f = open(outFilePath, 'w')
     writer = csv.writer(f)
     writer.writerows(rows)

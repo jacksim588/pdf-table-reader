@@ -1,3 +1,0 @@
-Emissions
-(tCO2e per % Split
-year) (kWh)

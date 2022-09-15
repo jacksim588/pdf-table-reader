@@ -1,5 +1,0 @@
-38,128
-(Location based)
-
-24,931
-(Market based)

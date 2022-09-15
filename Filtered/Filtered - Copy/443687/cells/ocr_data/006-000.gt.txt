@@ -1,1 +1,0 @@
-Energy consumption used to calculate Scope 1 emissions (kWh)

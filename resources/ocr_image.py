@@ -1,12 +1,11 @@
 import math
 import os
-import sys
 
 import cv2
 import numpy as np
 import pytesseract
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\home\site\wwwroot\App_Data\jobs\triggered\CO2DataMining\runner\resources\Tesseract-OCR\tesseract.exe'
 
 def main(image_file, tess_args):
     """

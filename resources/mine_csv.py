@@ -1,6 +1,6 @@
 #imports
 from distutils.log import error
-from tabulate import tabulate
+#from tabulate import tabulate
 import pandas as pd
 import pandas.io.common
 import numpy as np
@@ -225,18 +225,24 @@ def dropUnwantedColumns(df,columns_to_delete):
     return df
 
 def csv_to_array(folder,companyNumber):
-    print('csv to array')
+    #print('csv to array')
     output=[]
+    outDate=''
+    outScope1=''
+    outScope2=''
+    outScope3=''
+    outIntensity=''
+    outTotal=''
     hasCSV=False
     for file in os.listdir(folder):
-        print(file)
+        #print(file)
         try:
             if file.endswith(".csv"):
                 hasCSV=True
-                print('file: '+file)
+                #print('file: '+file)
                 characters=['\'',',']
                 columns_to_delete=['energy','kwh']
-                rows_to_delete=['kwh','kWh']
+                rows_to_delete=['kwh','kWh','k wh']
                 try:
                     df = pd.read_csv(folder+'\\'+file,encoding='iso-8859-1',header=None)
                 except ParserError:
@@ -258,6 +264,8 @@ def csv_to_array(folder,companyNumber):
                         foundDate = searchForDate(df)
                         
                         scope1 = extractDataByPhrase(df,['scope 1',
+                                                        'scope t',
+                                                        'direct emissions',
                                                         'direct combustion',
                                                         'emissions from burning of gas',
                                                         'emissions from burning of fuel',
@@ -286,29 +294,41 @@ def csv_to_array(folder,companyNumber):
                                                             'total co2e',
                                                             'total gross co?e',
                                                             'total co?e',
+                                                            'gross emmission'
                                                             'total gross coze',
                                                             'total coze',
-                                                            'all scopes'],
+                                                            'all scopes',
+                                                            'gross emissions',
+                                                            'total all scopes'],
                                                             unwantedPhrases=['kwh'],
                                                             sumIfMultiple=False)
-
                         #print('Date: '+foundDate)
                         #print('scope 1 value: ',scope1)
                         #print('scope 2 value: ',scope2)
                         #print('scope 3 value: ',scope3)
                         #print('Intensity: ', intensity)
                         #print('total emissions: ',totalemissions)
-                        output = [companyNumber,foundDate,scope1,scope2,scope3,intensity,totalemissions]
-                        print('Returning Data: ',output)
-                        return output
-                else:
-                    print('Not enough data found')
-                    raise errorHandling.FailedToExtractDataError
+                        if foundDate !='':
+                            outDate=foundDate
+                        if scope1 !='':
+                            outScope1=scope1
+                        if scope2 !='':
+                            outScope2=scope2
+                        if scope3 !='':
+                            outScope3=scope3
+                        if intensity !='':
+                            outIntensity=intensity
+                        if scope1 !='':
+                            outTotal=totalemissions
+                        
+                        
+                        #print('Returning Data: ',output)
+                        
+                
         except pandas.io.common.EmptyDataError:
-            print('Dataframe Empty.')
-            raise errorHandling.FailedToExtractDataError
+            continue
     if hasCSV ==False:
         raise errorHandling.FailedToExtractDataError
-#output = csv_to_array(r'F:\Data Mining\CO2Extraction\00457936\images','00457936')
 
-#print(output)
+    output = [companyNumber,outDate,outScope1,outScope2,outScope3,outIntensity,outTotal]
+    return output

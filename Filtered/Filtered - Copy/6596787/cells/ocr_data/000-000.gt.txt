@@ -1,3 +1,0 @@
-Reporting Parameter
-Energy consumption used to calculate e emissions
-

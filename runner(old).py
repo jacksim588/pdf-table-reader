@@ -17,16 +17,13 @@ import resources.file_structure as file_structure
 import resources.get_pdf as get_pdf
 import resources.pdf_to_image as pdf_to_image
 import resources.errorHandling as errorHandling
-import resources.formatImageTable as formatImageTable
 import time
 import psycopg2
-
 print("Beginning Demo 2.0")
 
 def main(image_filepath):
     #image_tables = table_ocr.extract_tables.main([image_filepath])
-    print(image_filepath)
-    image_tables = extract_tables.main([image_filepath],findTables=True)
+    image_tables = extract_tables.main([image_filepath])
     #print("Running `{}`".format(f"extract_tables.main([{image_filepath}])."))
     #print("Extracted the following tables from the image:")
     #print(image_tables)
@@ -59,6 +56,10 @@ def main(image_filepath):
 df = pd.read_csv('Input.csv', names=['CompanyNames'])           
 companyNumbers = df.CompanyNames.tolist()
 
+'''companyNumbers=['49933',
+                '273492',
+                '1388658',
+                '3411533']'''
 
 companyNumbers=[str(item).zfill(8) for item in companyNumbers]            
 f = open("F:\Data Mining\SharepointAuthentication.txt", "r")
@@ -72,20 +73,12 @@ conn = psycopg2.connect(
 )
 conn.autocommit = True
 
-
 folder = r"C:\Users\jacks\Documents\Document(Offline)\Barcanet\Record Linkage\Filtered\Filtered - Copy\\"
 #folder = r"C:\Users\jacks\Documents\Document(Offline)\Barcanet\Record Linkage\Filtered\test\\"
 
 
 
-companyNumbers=['03777037',
-                '00184594',
-                '01532937',
-                '05650187',
-                '03664571',
-                '10537415',
-                'JE111714',
-                'IE620851']  
+companyNumbers=['04768193']     
 folder = 'F:\Data Mining\CO2Extraction'
 file_structure.remove_contents(folder)
 Path(folder+'\imageOutput').mkdir(parents=True, exist_ok=True)
@@ -95,7 +88,7 @@ filterPDFCount=0
 filterPDFAvg=0
 dataMineCount=0
 dataMineAvg=0
-for companyNumber in companyNumbers[:1000]:
+for companyNumber in companyNumbers:
     print('CN: '+companyNumber)
     try:
         '''
@@ -107,31 +100,37 @@ for companyNumber in companyNumbers[:1000]:
         Stores it in the folder created above
         '''
         print('Retrieving PDF')
-        accountsDate=''
-        accountsDate = get_pdf.get_pdf_from_companies_house(folder,companyNumber)
+        getPDFstart = time.time()
+
+        get_pdf.get_pdf_from_companies_house(folder,companyNumber)
+
+        getPDFend = time.time()
+        getPDFAvg=(getPDFCount*getPDFAvg+(getPDFend-getPDFstart))/(getPDFCount+1)
+        getPDFCount+=1
         '''
         takes the PDF, and filters it down to the pages with CO2 data on it
         takes the filtered PDF & converts it to an images
         '''
         print('Filtering PDF')
+        filterPDFstart = time.time()
 
         pdf_to_image.pdf_to_images(folder,companyNumber)
         imageFiles = pdf_to_image.getImagePaths(folder,companyNumber)
 
+        
+        filterPDFend = time.time()
+        filterPDFAvg=(filterPDFCount*filterPDFAvg+(filterPDFend-filterPDFstart))/(filterPDFCount+1)
+        filterPDFCount+=1
         '''
         Takes the path of an image and extracts the table from this image
         '''
         print('Extracting data from image')
 
-
-        imgFolderPath=(folder+'\\'+companyNumber+'\\images')
-        formatImageTable.formatImages(imgFolderPath)
-
+        dataMinestart = time.time()
 
         try:
-            for file in os.listdir(imgFolderPath+'\\dataExtract'):
-                if file.endswith(".jpg"):
-                    main(imgFolderPath+'\\dataExtract\\'+file)
+            image_filepath=(folder+'\\'+companyNumber+'\\images\\'+imageFiles[0])
+            main(image_filepath)
         except cv2.error:
             print('Image Conversion Error')
         except IndexError:
@@ -139,32 +138,37 @@ for companyNumber in companyNumbers[:1000]:
             raise errorHandling.NoPhraseInPDFError
 
         print('Mining output data')
-        output = mine_csv.csv_to_array(folder+'\\'+companyNumber+'\\images\\dataExtract',companyNumber)
-        output.insert(1, accountsDate)
+        output = mine_csv.csv_to_array(folder+'\\'+companyNumber+'\\images',companyNumber)
         print(output)
 
+        dataMineend = time.time()
+        dataMineAvg=(dataMineCount*dataMineAvg+(dataMineend-dataMinestart))/(dataMineCount+1)
+        dataMineCount+=1
     except errorHandling.AccountsNotFoundError:
-        output=[companyNumber,accountsDate,'','','','','','','','AccountsNotFoundError']
+        output=[companyNumber,'','','','','','','AccountsNotFoundError']
     except errorHandling.NoPhraseInPDFError:
-        output=[companyNumber,accountsDate,'','','','','','','NoPhraseInPDFError']
+        output=[companyNumber,'','','','','','','NoPhraseInPDFError']
     except errorHandling.FailedToExtractDataError:
-        output=[companyNumber,accountsDate,'','','','','','','FailedToExtractDataError']
+        output=[companyNumber,'','','','','','','FailedToExtractDataError']
     except pdf2image.exceptions.PDFPageCountError:
-        output=[companyNumber,accountsDate,'','','','','','','PDFPageCountError']
+        output=[companyNumber,'','','','','','','PDFPageCountError']
     except Exception as e:
         if 'Syntax Error' in str(e):
             continue
-        output=[companyNumber,'','','','','','','',e]
+        output=[companyNumber,'','','','','','',e]
 
     print('Exporting Data for: ',companyNumber)
     print('data exporting: ',output)
+
+
     cursor = conn.cursor()
     try:
-        cursor.execute('''INSERT INTO "Co2_Annual_Accounts_Mining" VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s)''',(output[0],output[1],output[2],output[3],output[4],output[5],output[6],output[7],str(output[8])))
+        cursor.execute('''INSERT INTO "Co2_AnnualAccounts_Mining" VALUES (%s, %s, %s,%s, %s, %s, %s, %s)''',(output[0],output[1],output[2],output[3],output[4],output[5],output[6],str(output[7])))
     except IndexError:
-        cursor.execute('''INSERT INTO "Co2_Annual_Accounts_Mining" VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s)''',(output[0],output[1],output[2],output[3],output[4],output[5],output[6],output[7],''))
+        cursor.execute('''INSERT INTO "Co2_AnnualAccounts_Mining" VALUES (%s, %s, %s,%s, %s, %s, %s, %s)''',(output[0],output[1],output[2],output[3],output[4],output[5],output[6],''))
     #Commit changes in the database
     conn.commit()
+
 
     
 

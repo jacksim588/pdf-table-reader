@@ -67,8 +67,8 @@ def find_tables(image):
     bounding_rects = best fitting rectangle of the polygon area
     '''
     MIN_TABLE_AREA = 1e5
-    for c in contours:
-        print(cv2.contourArea(c))
+    '''for c in contours:
+        print(cv2.contourArea(c))'''
     contours = [c for c in contours if cv2.contourArea(c) > MIN_TABLE_AREA]
     perimeter_lengths = [cv2.arcLength(c, True) for c in contours]
     epsilons = [0.1 * p for p in perimeter_lengths]
@@ -86,7 +86,7 @@ def find_tables(image):
     images = [image[y:y+h, x:x+w] for x, y, w, h in bounding_rects]
     return images
 
-def main(files):
+def main(files,findTables=True):
     results = []
     '''
     For each file in directory:
@@ -98,7 +98,10 @@ def main(files):
         directory, filename = os.path.split(f)
         #print(f)
         image = cv2.imread(f, cv2.IMREAD_GRAYSCALE)
-        tables = find_tables(image)
+        if findTables:#if its been passed a page, look for tables. if its been passed a table, skip this step
+            tables = find_tables(image)
+        else:
+            tables=[image]
         files = []
         filename_sans_extension = os.path.splitext(filename)[0]
         if tables:

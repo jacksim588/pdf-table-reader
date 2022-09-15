@@ -1,7 +1,0 @@
-Gas: 4,170,538
-Electricity: 1,467,384
-Transport fuel: 1,377,754
-
-Total: 7,015,676 kWh
-766.75 tonnes CO.e
-

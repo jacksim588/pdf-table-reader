@@ -1,6 +1,0 @@
-Calculated Emissions
-tCO2ze
-
-288 690
-1,305 2,533
-17 31
